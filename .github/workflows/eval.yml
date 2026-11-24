@@ -1,0 +1,30 @@
+name: eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      adapter:
+        description: Caminho ou repo HF do adapter
+        required: true
+        default: outputs/checkpoints/lora/final
+      limit:
+        description: Limite de exemplos
+        required: false
+        default: "200"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[train,eval,dev]"
+      - run: python -m nanorouter.cli data --out data --n 3000
+      - run: python -m nanorouter.cli eval --adapter "${{ inputs.adapter }}" --limit "${{ inputs.limit }}" --plot
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: outputs/eval

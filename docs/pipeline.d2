@@ -1,0 +1,62 @@
+direction: down
+
+spec: {
+  label: "configs/tools.yaml\nspec = fonte de verdade"
+  style: {fill: "#0f5f57"; font-color: "#ffffff"; stroke: "#0f5f57"; border-radius: 6}
+}
+
+synth: {
+  label: "synth.py\ntemplates + fuzzing\n+ hard negatives"
+  style: {fill: "#f5f1e8"; stroke: "#0f5f57"; font-color: "#0f1417"; border-radius: 6}
+}
+
+data: {
+  label: "data/\ntrain · val · test\n(80/10/10 estratificado)"
+  style: {fill: "#f5f1e8"; stroke: "#0f5f57"; font-color: "#0f1417"; border-radius: 6}
+}
+
+train: {
+  label: "train.py\nLoRA r=16 · completion-only loss"
+  style: {fill: "#e8f0ee"; stroke: "#0f5f57"; font-color: "#0f1417"; border-radius: 6}
+}
+
+ckpt: {
+  label: "checkpoints/lora\n+ spec_fingerprint.json"
+  style: {fill: "#e8f0ee"; stroke: "#0f5f57"; font-color: "#0f1417"; border-radius: 6}
+}
+
+eval: {
+  label: "evaluate.py\nmesmo prompt · mesma suite"
+  style: {fill: "#f5f1e8"; stroke: "#0f5f57"; font-color: "#0f1417"; border-radius: 6}
+}
+
+baselines: {
+  label: "baselines\nzero-shot · few-shot · 7B"
+  style: {fill: "#ffffff"; stroke: "#9fc0b9"; font-color: "#5f6a68"; border-radius: 6}
+}
+
+metrics: {
+  label: "metrics.py\nexact_match · spec_validity\narg_f1 · p50/p95"
+  style: {fill: "#0f1417"; font-color: "#ffffff"; stroke: "#0f1417"; border-radius: 6}
+}
+
+export: {
+  label: "export.py\nGGUF q4_k_m · ONNX int8"
+  style: {fill: "#ffffff"; stroke: "#9fc0b9"; font-color: "#5f6a68"; border-radius: 6}
+}
+
+serve: {
+  label: "server.py\nFastAPI /route"
+  style: {fill: "#ffffff"; stroke: "#9fc0b9"; font-color: "#5f6a68"; border-radius: 6}
+}
+
+spec -> synth: "gera"
+synth -> data: "6.000 registros"
+data -> train
+train -> ckpt
+ckpt -> eval
+data -> eval: "suite de teste"
+baselines -> eval
+eval -> metrics
+ckpt -> export
+ckpt -> serve

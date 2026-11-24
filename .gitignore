@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+dist/
+build/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# artefatos
+data/
+outputs/
+checkpoints/
+*.gguf
+*.onnx
+*.safetensors
+runs/
+
+# mídia local
+*.mp4
+.DS_Store

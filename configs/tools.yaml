@@ -1,0 +1,60 @@
+domain: travel-assistant
+version: 1
+languages: [pt-BR, en, es]
+
+tools:
+  - name: search_flights
+    description: Busca voos disponíveis entre dois aeroportos numa data.
+    slots:
+      origin: {type: iata, required: true}
+      destination: {type: iata, required: true}
+      date: {type: date, required: true}
+      passengers: {type: int, required: false, default: 1, min: 1, max: 9}
+      cabin: {type: enum, values: [economy, premium, business], required: false, default: economy}
+
+  - name: search_hotels
+    description: Busca hotéis numa cidade com filtro de preço por noite.
+    slots:
+      city: {type: city, required: true}
+      checkin: {type: date, required: true}
+      checkout: {type: date, required: true}
+      guests: {type: int, required: false, default: 1, min: 1, max: 8}
+      max_price: {type: float, required: false}
+
+  - name: book_flight
+    description: Reserva um voo já escolhido, dado o id do voo.
+    slots:
+      flight_id: {type: string, required: true}
+      passenger_name: {type: person, required: true}
+      seat_pref: {type: enum, values: [window, aisle, middle], required: false}
+
+  - name: cancel_booking
+    description: Cancela uma reserva existente.
+    slots:
+      booking_id: {type: string, required: true}
+      reason: {type: string, required: false}
+
+  - name: booking_status
+    description: Consulta o status de uma reserva.
+    slots:
+      booking_id: {type: string, required: true}
+
+  - name: get_weather
+    description: Previsão do tempo para uma cidade numa data.
+    slots:
+      city: {type: city, required: true}
+      date: {type: date, required: true}
+
+  - name: convert_currency
+    description: Converte um valor entre duas moedas.
+    slots:
+      amount: {type: float, required: true}
+      from_currency: {type: currency, required: true}
+      to_currency: {type: currency, required: true}
+
+  - name: search_poi
+    description: Busca pontos de interesse turístico numa cidade por categoria.
+    slots:
+      city: {type: city, required: true}
+      category: {type: enum, values: [museum, park, restaurant, nightlife, landmark], required: true}
+      radius_km: {type: float, required: false, default: 5.0}
