@@ -25,8 +25,10 @@ def run(
     import torch
     from datasets import Dataset
     from peft import LoraConfig
-    from transformers import AutoTokenizer
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     from trl import SFTConfig, SFTTrainer
+
+    from .backends import load_model
 
     cfg = load_config(config_path)
     spec = yaml.safe_load(Path(spec_path).read_text(encoding="utf-8"))
@@ -44,6 +46,14 @@ def run(
 
     dataset = Dataset.from_list([render(r) for r in records])
 
+    # O config do Qwen2.5 declara bf16; em CPU sem suporte a bf16 o transformers
+    # cai num caminho emulado e o treino fica várias vezes mais lento. Carregar
+    # o modelo explicitamente em fp32 evita isso (e o aviso do mkldnn).
+    use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+    model = load_model(
+        AutoModelForCausalLM, cfg["model"], torch.bfloat16 if use_bf16 else torch.float32
+    )
+
     lora = cfg["lora"]
     peft_cfg = LoraConfig(
         r=lora["r"],
@@ -55,6 +65,12 @@ def run(
     )
 
     t = cfg["train"]
+    # `warmup_ratio` saiu do TrainingArguments no transformers 5.x; `warmup_steps`
+    # existe nas duas gerações. A proporção continua sendo a fonte de verdade no
+    # YAML, e o número de passos é derivado do tamanho do dataset.
+    steps_per_epoch = max(1, len(dataset) // (t["batch_size"] * t["grad_accum"]))
+    warmup_steps = int(steps_per_epoch * t["epochs"] * t["warmup_ratio"])
+
     sft_cfg = SFTConfig(
         output_dir=str(out_dir),
         num_train_epochs=t["epochs"],
@@ -62,7 +78,7 @@ def run(
         gradient_accumulation_steps=t["grad_accum"],
         learning_rate=t["lr"],
         lr_scheduler_type="cosine",
-        warmup_ratio=t["warmup_ratio"],
+        warmup_steps=warmup_steps,
         weight_decay=t["weight_decay"],
         max_length=t["max_seq_len"],
         logging_steps=t["logging_steps"],
@@ -70,15 +86,15 @@ def run(
         save_total_limit=2,
         seed=cfg["seed"],
         data_seed=cfg["seed"],
-        bf16=torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
-        fp16=torch.cuda.is_available() and not torch.cuda.is_bf16_supported(),
+        bf16=use_bf16,
+        fp16=torch.cuda.is_available() and not use_bf16,
         completion_only_loss=t["completion_only_loss"],
         packing=False,
         report_to=[],
     )
 
     trainer = SFTTrainer(
-        model=cfg["model"],
+        model=model,
         args=sft_cfg,
         train_dataset=dataset,
         peft_config=peft_cfg,

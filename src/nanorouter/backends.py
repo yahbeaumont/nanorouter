@@ -10,6 +10,28 @@ from typing import Any
 from .prompts import build_messages
 
 
+def resolve_device(device: str) -> str:
+    """Traduz `auto` para um device concreto: `torch.Tensor.to("auto")` não existe."""
+    if device != "auto":
+        return device
+    import torch
+
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def load_model(cls: Any, model: str, dtype: Any) -> Any:
+    """Carrega o modelo aceitando as duas grafias do argumento de precisão.
+
+    `torch_dtype` é o nome histórico; `dtype` passou a ser aceito nas versões
+    novas do transformers. O projeto declara `transformers>=4.44`, então as duas
+    precisam funcionar.
+    """
+    try:
+        return cls.from_pretrained(model, dtype=dtype)
+    except TypeError:
+        return cls.from_pretrained(model, torch_dtype=dtype)
+
+
 class Backend(ABC):
     name: str = "base"
 
@@ -24,19 +46,20 @@ class Backend(ABC):
 
 class HFBackend(Backend):
     def __init__(self, model: str, adapter: str | None = None, device: str = "auto"):
-        import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         self.name = f"hf:{model}" + (f"+{adapter}" if adapter else "")
+        self.device = resolve_device(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model, dtype=torch.bfloat16 if device != "cpu" else torch.float32
-        )
+        import torch
+
+        dtype = torch.bfloat16 if self.device.startswith("cuda") else torch.float32
+        self.model = load_model(AutoModelForCausalLM, model, dtype)
         if adapter:
             from peft import PeftModel
 
             self.model = PeftModel.from_pretrained(self.model, adapter)
-        self.model = self.model.to(device).eval()
+        self.model = self.model.to(self.device).eval()
 
     def complete(self, spec: dict[str, Any], utterance: str) -> str:
         import torch
@@ -54,9 +77,11 @@ class HFBackend(Backend):
                 top_p=None,
                 pad_token_id=self.tokenizer.eos_token_id,
             )
-        return self.tokenizer.decode(
+        # `decode` é tipado como `str | list[str]` nas versões novas do transformers.
+        text = self.tokenizer.decode(
             out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
         )
+        return text if isinstance(text, str) else "".join(text)
 
 
 class LlamaCppBackend(Backend):
@@ -69,12 +94,16 @@ class LlamaCppBackend(Backend):
         self.llm = Llama(model_path=gguf_path, n_ctx=n_ctx, n_threads=threads, verbose=False)
 
     def complete(self, spec: dict[str, Any], utterance: str) -> str:
+        from typing import cast
+
         out = self.llm.create_chat_completion(
-            messages=build_messages(spec, utterance),
+            messages=cast(Any, build_messages(spec, utterance)),
             max_tokens=192,
             temperature=0.0,
         )
-        return out["choices"][0]["message"]["content"]
+        if not isinstance(out, dict):
+            raise RuntimeError("llama.cpp devolveu stream inesperado")
+        return out["choices"][0]["message"]["content"] or ""
 
 
 class OpenAICompatBackend(Backend):

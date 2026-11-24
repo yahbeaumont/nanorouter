@@ -15,22 +15,31 @@
 
 ---
 
-## Estado deste repositório
+## Resultados medidos
 
-O harness está completo e verificado de ponta a ponta: spec de ferramentas, geração de dataset, validação de contrato, métricas, baselines, CLI, API, export e CI. **A run de treino e avaliação ainda não foi executada neste repositório**, então não há tabela de resultados publicada aqui — `docs/RESULTS.md` é gerado por `make eval`, na sua máquina, e não copiado de outro lugar.
+Tudo abaixo rodou neste repositório, no mesmo prompt e na mesma suite: 150 itens de
+`data/test.jsonl`, 6 vCPU e nenhuma GPU. Método, custo e limitações em
+[docs/RESULTS.md](docs/RESULTS.md).
 
-O que já foi medido, rodando `make data`, `make test` e `make lint` no commit inicial:
+| backend | exact_match | tool_acc | spec_valid | arg_f1 | p95 |
+|---|---|---|---|---|---|
+| Qwen2.5-0.5B zero-shot | 0,113 | 0,293 | 0,287 | 0,659 | 12,5 s |
+| Qwen2.5-0.5B few-shot (4) | 0,273 | 0,700 | 0,420 | 0,585 | 6,4 s |
+| Qwen2.5-7B q4_k_m zero-shot | 0,227 | 0,833 | 0,687 | 0,697 | 9,5 s |
+| **Qwen2.5-0.5B + LoRA** | **0,587** | **0,973** | **0,807** | **0,744** | **6,4 s** |
 
-| verificação | comando | resultado |
-|---|---|---|
-| dataset | `make data` | 6.000 registros, 100% válidos contra o spec, 4.556 enunciados distintos |
-| distribuição | `make data` | 70,1% tool · 18,0% hard negative · 11,9% `no_tool` |
-| testes | `make test` | 35 testes, 85% de cobertura |
-| lint e tipos | `make lint` | ruff e mypy sem apontamentos |
+O adapter viu 400 registros em uma época, 4.639 s de CPU. Mesmo assim, o modelo 15x maior perde em
+todas as métricas, inclusive na aderência ao contrato que o banner do topo afirma: 0,807 contra
+0,687. O número é medido aqui, não estimado.
 
-A próxima etapa é a que dá sentido ao resto: `make train` seguido de `make eval` para popular a tabela de comparação com número próprio.
+Propriedades do gerador e da suíte, verificadas por `make data`, `make test` e `make lint`:
 
-O banner do topo é essa tese em uma linha. A tabela que a sustenta é gerada por `make eval`; enquanto ela não for executada aqui, o número do banner não é reproduzível a partir deste repositório, e é isso que `docs/RESULTS.md` registra.
+| verificação | resultado |
+|---|---|
+| dataset | 6.000 registros, 100% válidos contra o spec, 4.556 enunciados distintos |
+| distribuição | 70,1% tool · 18,0% hard negative · 11,9% `no_tool` |
+| testes | 42 testes, 86% de cobertura |
+| lint e tipos | ruff e mypy sem apontamentos |
 
 ## A tese
 
@@ -65,6 +74,13 @@ make eval                 # grava outputs/eval/RESULTS.md + matrizes de confusã
 make export
 ```
 
+Para usar o adapter que gerou a tabela acima, sem treinar nada:
+
+```bash
+make fetch-adapter        # baixa o adapter de referência (release v0.1.0)
+nanorouter route "cancela a reserva BK1042" --adapter checkpoints/lora/final
+```
+
 Sem treinar, dá para inspecionar o dataset e o contrato:
 
 ```bash
@@ -80,7 +96,7 @@ nanorouter route "cancela a reserva BK1042" --adapter checkpoints/lora/final
 nanorouter route "cancela a reserva BK1042" --adapter yahbeaumont/nanorouter-lora
 ```
 
-O adapter de referência é o da run `seed=1337` sobre `main`, publicado com `make publish`. Se ainda não houver adapter no Hub, treine com `make train` e aponte para `checkpoints/lora/final`.
+O adapter de referência é o da release `v0.1.0`, treinado com seed 1337 em 400 registros: `make fetch-adapter` baixa e extrai em `checkpoints/lora/final`. Para publicar um adapter seu no Hub, use `make publish`.
 
 API local (sobe com o modelo base se não houver adapter):
 
@@ -132,7 +148,7 @@ make publish-dry HF_REPO=<seu-usuario>/nanorouter-lora   # monta outputs/_publis
 make publish     HF_REPO=<seu-usuario>/nanorouter-lora   # envia
 ```
 
-A card em `docs/adapter_card.md` recebe o modelo base, o repo, a data e a tabela de `outputs/eval/RESULTS.md`. Sem a run de avaliação, a tabela sai como `sem run`: a card não herda número de outro lugar. Os pesos (`*.safetensors`) ficam fora do git; `adapter_config.json` e `spec_fingerprint.json` ficam versionados, porque são o que amarra o adapter ao contrato e à run que o gerou.
+A card em `docs/adapter_card.md` recebe o modelo base, o repo, a data e a tabela de `outputs/eval/RESULTS.md`. Sem essa run, a tabela sai como `sem run`: a card não herda número de outro lugar. Os pesos (`*.safetensors`) ficam fora do git; `adapter_config.json` e `spec_fingerprint.json` ficam versionados, porque são o que amarra o adapter ao contrato e à run que o gerou.
 
 ## Limitações
 

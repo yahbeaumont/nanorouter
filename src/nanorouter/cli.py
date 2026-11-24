@@ -52,12 +52,16 @@ def eval_cmd(
     suite: str = typer.Option("data/test.jsonl"),
     out: Path = typer.Option("outputs/eval"),
     spec_path: str = typer.Option("configs/tools.yaml"),
+    model: str = typer.Option("Qwen/Qwen2.5-0.5B-Instruct"),
     adapter: str | None = typer.Option(None),
+    gguf: str | None = typer.Option(None),
+    skip_baselines: bool = typer.Option(False),
+    threads: int = typer.Option(4),
     limit: int | None = typer.Option(None),
     plot: bool = typer.Option(False),
 ) -> None:
-    """Avalia base, few-shot e (se houver) fine-tunado."""
-    from .backends import HFBackend
+    """Avalia base, few-shot, GGUF e (se houver) fine-tunado na mesma suite."""
+    from .backends import HFBackend, LlamaCppBackend
     from .baselines import FewShotBackend
     from .evaluate import compare, run_suite
 
@@ -65,10 +69,18 @@ def eval_cmd(
     items = [json.loads(line) for line in Path(suite).read_text().splitlines() if line]
     val = [json.loads(line) for line in Path("data/val.jsonl").read_text().splitlines()[:4]]
 
-    base = HFBackend("Qwen/Qwen2.5-0.5B-Instruct")
-    backends = [base, FewShotBackend(base, spec, val)]
+    backends = []
+    if not skip_baselines:
+        base = HFBackend(model)
+        backends += [base, FewShotBackend(base, spec, val)]
+    if gguf:
+        backends.append(LlamaCppBackend(gguf, threads=threads))
     if adapter:
-        backends.append(HFBackend("Qwen/Qwen2.5-0.5B-Instruct", adapter=adapter))
+        backends.append(HFBackend(model, adapter=adapter))
+    if not backends:
+        raise typer.BadParameter(
+            "nada para avaliar: use --adapter, --gguf ou remova --skip-baselines"
+        )
 
     results = [run_suite(b, spec, items, limit) for b in backends]
     md = compare(results, out)

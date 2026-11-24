@@ -2,8 +2,9 @@ PY ?= python
 MODEL ?= Qwen/Qwen2.5-0.5B-Instruct
 N ?= 6000
 HF_REPO ?= yahbeaumont/nanorouter-lora
+ADAPTER_URL ?= https://github.com/yahbeaumont/nanorouter/releases/download/v0.1.0/nanorouter-lora-cpu-400.zip
 
-.PHONY: help setup data train eval export serve test lint fmt publish publish-dry clean all
+.PHONY: help setup data train eval export serve test lint fmt publish publish-dry fetch-adapter clean all
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -33,6 +34,12 @@ publish: ## publica o adapter no Hugging Face Hub
 publish-dry: ## monta o staging da model card sem enviar nada
 	$(PY) -m pip install -q "huggingface_hub>=0.24"
 	$(PY) scripts/publish_adapter.py --repo $(HF_REPO) --eval-dir outputs/eval --dry-run
+
+fetch-adapter: ## baixa o adapter de referência da release
+	curl -fsSL -o /tmp/nanorouter-lora.zip "$(ADAPTER_URL)"
+	mkdir -p checkpoints/lora
+	unzip -oq /tmp/nanorouter-lora.zip -d checkpoints/lora
+	@echo "adapter em checkpoints/lora/final"
 
 test: ## roda testes
 	$(PY) -m pytest

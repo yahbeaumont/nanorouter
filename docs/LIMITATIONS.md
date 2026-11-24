@@ -16,4 +16,6 @@
 
 **Dados de slot não são validados contra o mundo.** `GRU` é sintaticamente válido mesmo se o aeroporto não existir na data. A validação é de contrato, não de realidade.
 
-**Número de referência ausente.** Este repositório ainda não publica uma run de treino medida. Enquanto isso, trate a tese como hipótese em teste, não como resultado.
+**A run publicada é um piso, não o teto.** O adapter medido em `docs/RESULTS.md` viu 400 dos 4.800 registros de treino, em uma época, em CPU, a 11,6 s por registro. A configuração completa (4.800 registros, 3 épocas) roda em GPU em cerca de 20 minutos e deve produzir números melhores; o que está publicado é o que foi de fato executado.
+
+**Amostra de avaliação.** A tabela usa 150 dos 601 itens de teste. O intervalo de confiança de 95% em torno de 0,587 tem cerca de 16 pontos percentuais de largura: diferenças grandes aparecem, diferenças pequenas não. Uma avaliação completa custa cerca de 50 minutos por backend em CPU.

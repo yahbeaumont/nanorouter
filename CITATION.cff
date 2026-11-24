@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use nanorouter or its dataset in your work, cite it as below."
+title: "nanorouter: schema-valid routing JSON from a fine-tuned 0.5B SLM"
+abstract: >-
+  A fine-tuning harness for small language models that emit routing JSON which
+  validates against a strict tool schema. Includes a deterministic synthetic
+  dataset with hard negatives, an evaluation harness with prompt baselines,
+  a CLI, an HTTP API, GGUF and ONNX export, and a published LoRA adapter.
+authors:
+  - family-names: Beaumont
+    given-names: Hay
+    email: yahbeaumont@gmail.com
+    website: "https://github.com/yahbeaumont"
+version: 0.1.0
+date-released: "2026-11-24"
+license: MIT
+repository-code: "https://github.com/yahbeaumont/nanorouter"
+keywords:
+  - small language models
+  - fine-tuning
+  - lora
+  - structured output
+  - json schema
+  - tool calling
+  - intent routing
