@@ -71,8 +71,12 @@ make setup
 make data N=6000          # ~15 s
 make train                # ~20 min em GPU, ~2 h em CPU
 make eval                 # grava outputs/eval/RESULTS.md + matrizes de confusão
-make export
 ```
+
+`make export` gera GGUF e ONNX a partir do adapter treinado e tem pré-requisitos próprios: o
+`convert_hf_to_gguf.py` e o `llama-quantize` do llama.cpp precisam estar no `PATH`, e o ONNX exige
+o extra `[export]` (`pip install -e ".[export]"`). Sem eles o comando falha com mensagem explícita,
+não em silêncio.
 
 Para usar o adapter que gerou a tabela acima, sem treinar nada:
 

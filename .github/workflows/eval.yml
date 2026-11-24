@@ -1,17 +1,15 @@
 name: eval
-
 on:
   workflow_dispatch:
     inputs:
       adapter:
         description: Caminho ou repo HF do adapter
         required: true
-        default: outputs/checkpoints/lora/final
+        default: checkpoints/lora/final
       limit:
         description: Limite de exemplos
         required: false
         default: "200"
-
 jobs:
   eval:
     runs-on: ubuntu-latest
@@ -21,9 +19,17 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e ".[train,eval,dev]"
+      # Wheel de CPU: o torch do PyPI padrão traz CUDA e não é usado aqui.
+      - run: pip install --index-url https://download.pytorch.org/whl/cpu torch
+      - run: pip install -e ".[eval,dev]" "transformers>=4.44" "peft>=0.11"
       - run: python -m nanorouter.cli data --out data --n 3000
-      - run: python -m nanorouter.cli eval --adapter "${{ inputs.adapter }}" --limit "${{ inputs.limit }}" --plot
+      # Só o adapter: as baselines de prompt levam ~30 min em CPU de runner.
+      - run: >
+          python -m nanorouter.cli eval
+          --adapter "${{ inputs.adapter }}"
+          --skip-baselines
+          --limit "${{ inputs.limit }}"
+          --plot
       - uses: actions/upload-artifact@v4
         with:
           name: eval-results
