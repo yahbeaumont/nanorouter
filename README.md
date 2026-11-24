@@ -9,6 +9,8 @@
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![model](https://img.shields.io/badge/model-Qwen2.5--0.5B--Instruct-8A2BE2.svg)](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct)
 
+<img src="docs/banner.png" alt="nanorouter: a 0.5B SLM that beats a 15x larger model at schema-valid routing JSON" width="100%">
+
 </div>
 
 ---
@@ -27,6 +29,8 @@ O que já foi medido, rodando `make data`, `make test` e `make lint` no commit i
 | lint e tipos | `make lint` | ruff e mypy sem apontamentos |
 
 A próxima etapa é a que dá sentido ao resto: `make train` seguido de `make eval` para popular a tabela de comparação com número próprio.
+
+O banner do topo é essa tese em uma linha. A tabela que a sustenta é gerada por `make eval`; enquanto ela não for executada aqui, o número do banner não é reproduzível a partir deste repositório, e é isso que `docs/RESULTS.md` registra.
 
 ## A tese
 
@@ -69,6 +73,15 @@ head -1 data/test.jsonl | python -m json.tool
 python -m nanorouter.cli eval --limit 20   # exige o extra [train]
 ```
 
+Com um adapter treinado, o roteamento roda pelo CLI ou pelo Hub:
+
+```bash
+nanorouter route "cancela a reserva BK1042" --adapter checkpoints/lora/final
+nanorouter route "cancela a reserva BK1042" --adapter yahbeaumont/nanorouter-lora
+```
+
+O adapter de referência é o da run `seed=1337` sobre `main`, publicado com `make publish`. Se ainda não houver adapter no Hub, treine com `make train` e aponte para `checkpoints/lora/final`.
+
 API local (sobe com o modelo base se não houver adapter):
 
 ```bash
@@ -105,9 +118,21 @@ curl -s localhost:8000/route -H 'content-type: application/json' \
 ```
 configs/     spec de ferramentas + hiperparâmetros
 src/         schema, synth, train, eval, export, cli, server
+scripts/     publicação do adapter no Hub
 tests/       schema, determinismo, métricas, pipeline, smoke
 docs/        método, resultados, limitações
 ```
+
+## Publicando o adapter
+
+O adapter treinado pode ir para o Hugging Face Hub com a model card já preenchida:
+
+```bash
+make publish-dry HF_REPO=<seu-usuario>/nanorouter-lora   # monta outputs/_publish, não envia
+make publish     HF_REPO=<seu-usuario>/nanorouter-lora   # envia
+```
+
+A card em `docs/adapter_card.md` recebe o modelo base, o repo, a data e a tabela de `outputs/eval/RESULTS.md`. Sem a run de avaliação, a tabela sai como `sem run`: a card não herda número de outro lugar. Os pesos (`*.safetensors`) ficam fora do git; `adapter_config.json` e `spec_fingerprint.json` ficam versionados, porque são o que amarra o adapter ao contrato e à run que o gerou.
 
 ## Limitações
 

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="nanorouter — a 0.5B SLM that beats a 15x larger model at schema-valid routing JSON">
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#1A1F26" stroke-width="1"/>
+    </pattern>
+    <style>
+      .mono { font-family: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .word { font-size: 88px; font-weight: 700; fill: #F2F5F7; letter-spacing: -2px; }
+      .sub { font-size: 20px; fill: #8B959F; letter-spacing: 0.2px; }
+      .tok { font-size: 14px; fill: #C9D2DA; }
+      .key { fill: #6FE3B0; }
+      .num { fill: #F0B357; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="640" fill="#0B0D10"/>
+  <rect width="1280" height="640" fill="url(#grid)" opacity="0.55"/>
+
+  <text class="mono word" x="80" y="286">nanorouter</text>
+  <rect x="80" y="318" width="300" height="3" fill="#6FE3B0"/>
+  <text class="mono sub" x="80" y="368">a 0.5B SLM that beats a 15x larger model</text>
+  <text class="mono sub" x="80" y="396">at schema-valid routing JSON</text>
+
+  <path d="M690 320 H775" stroke="#F0B357" stroke-width="1" opacity="0.55"/>
+  <circle cx="782" cy="320" r="7" fill="#F0B357"/>
+  <path d="M789 320 H830" stroke="#6FE3B0" stroke-width="1"/>
+  <rect x="830" y="196" width="380" height="248" rx="10" fill="#0F1318" stroke="#6FE3B0" stroke-width="1"/>
+
+  <g class="mono tok">
+    <text x="854" y="240">{</text>
+    <text x="870" y="272"><tspan class="key">"tool"</tspan>: <tspan class="key">"cancel_booking"</tspan>,</text>
+    <text x="870" y="304"><tspan class="key">"args"</tspan>: { <tspan class="key">"booking_id"</tspan>: <tspan class="key">"BK1042"</tspan> },</text>
+    <text x="870" y="336"><tspan class="key">"confidence"</tspan>: <tspan class="num">0.94</tspan></text>
+    <text x="854" y="368">}</text>
+  </g>
+  <text class="mono" x="854" y="416" font-size="12" fill="#5C6771">spec_valid: true</text>
+</svg>

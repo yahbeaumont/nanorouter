@@ -15,11 +15,22 @@ htmlcov/
 # artefatos
 data/
 outputs/
-checkpoints/
 *.gguf
 *.onnx
 *.safetensors
 runs/
+
+# checkpoints: os pesos ficam fora do git, os metadados do adapter ficam dentro.
+# Um diretório excluído não pode ser reaberto por `!`, então a exceção sobe
+# nível por nível até o arquivo.
+checkpoints/*
+!checkpoints/lora/
+checkpoints/lora/*
+!checkpoints/lora/final/
+checkpoints/lora/final/*
+!checkpoints/lora/final/*.json
+!checkpoints/lora/final/*.md
+!checkpoints/lora/final/*.txt
 
 # mídia local
 *.mp4
