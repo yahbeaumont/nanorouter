@@ -1,0 +1,6 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "n_records": 400,
+  "seed": 1337,
+  "spec_sha256_12": "37528629e856"
+}

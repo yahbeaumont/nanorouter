@@ -46,4 +46,6 @@ def test_resolve_device_keeps_explicit_device() -> None:
 
 
 def test_resolve_device_maps_auto_to_concrete_device() -> None:
+    # `auto` só existe quando há torch para responder se há CUDA.
+    pytest.importorskip("torch")
     assert resolve_device("auto") in {"cpu", "cuda"}
