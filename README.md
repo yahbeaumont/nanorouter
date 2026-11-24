@@ -9,7 +9,7 @@
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![model](https://img.shields.io/badge/model-Qwen2.5--0.5B--Instruct-8A2BE2.svg)](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct)
 
-<img src="docs/banner.png" alt="nanorouter: a 0.5B SLM that beats a 15x larger model at schema-valid routing JSON" width="100%">
+<img src="docs/banner.png" alt="nanorouter: a 0.5B SLM that beats a 14x larger model at schema-valid routing JSON" width="100%">
 
 </div>
 
@@ -28,7 +28,7 @@ Tudo abaixo rodou neste repositório, no mesmo prompt e na mesma suite: 150 iten
 | Qwen2.5-7B q4_k_m zero-shot | 0,227 | 0,833 | 0,687 | 0,697 | 9,5 s |
 | **Qwen2.5-0.5B + LoRA** | **0,587** | **0,973** | **0,807** | **0,744** | **6,4 s** |
 
-O adapter viu 400 registros em uma época, 4.639 s de CPU. Mesmo assim, o modelo 15x maior perde em
+O adapter viu 400 registros em uma época, 4.639 s de CPU. Mesmo assim, o modelo 14x maior perde em
 todas as métricas, inclusive na aderência ao contrato que o banner do topo afirma: 0,807 contra
 0,687. O número é medido aqui, não estimado.
 

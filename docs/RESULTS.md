@@ -41,7 +41,7 @@ viola o contrato (slot inventado, obrigatório faltando, tipo errado, JSON invá
 0,293 para 0,700 e `exact_match` de 0,113 para 0,273, mas `arg_f1` cai de 0,659 para 0,585: o modelo
 passa a copiar o formato dos exemplos e, junto com ele, valores que não estavam no enunciado.
 
-**O 7B é melhor em contrato, não em decisão exata.** Com 15x mais parâmetros, ele sobe `spec_valid`
+**O 7B é melhor em contrato, não em decisão exata.** Com 14x mais parâmetros, ele sobe `spec_valid`
 para 0,687 e `tool_acc` para 0,833, mas fica em 0,227 de `exact_match`, abaixo do 0,5B com quatro
 exemplos no prompt (0,273). Com n=150, essa diferença de 0,046 está dentro do ruído amostral e não
 deve ser lida como vitória.
@@ -51,7 +51,7 @@ deve ser lida como vitória.
 6,4 s de p95 contra 9,5 s, porque aprendeu a emitir uma saída curta e no formato, em vez de divagar.
 
 A leitura que importa: **aderência ao contrato pesa mais que capacidade bruta** em tarefa de saída
-fechada. O modelo 15x menor, ensinado a respeitar o schema, erra menos o contrato do que o modelo
+fechada. O modelo 14x menor, ensinado a respeitar o schema, erra menos o contrato do que o modelo
 grande que nunca foi ensinado.
 
 A ressalva também importa: esse adapter viu 400 registros e 1 época, contra os 4.800 registros e 3
