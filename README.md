@@ -38,14 +38,14 @@ Propriedades do gerador e da suíte, verificadas por `make data`, `make test` e 
 |---|---|
 | dataset | 6.000 registros, 100% válidos contra o spec, 4.556 enunciados distintos |
 | distribuição | 70,1% tool · 18,0% hard negative · 11,9% `no_tool` |
-| testes | 42 testes, 86% de cobertura |
+| testes | 47 testes, 84% de cobertura |
 | lint e tipos | ruff e mypy sem apontamentos |
 
 ## A tese
 
-Roteamento é uma tarefa estreita: escolher uma ferramenta entre oito e preencher slots tipados. Para esse perfil, um modelo pequeno ajustado ao contrato deveria competir com um modelo muito maior que nunca foi ensinado a respeitar schema. A hipótese deste projeto é que **aderência ao contrato pesa mais que capacidade bruta** em tarefas de saída fechada.
+Roteamento é uma tarefa estreita: escolher uma ferramenta entre oito e preencher slots tipados. Para esse perfil, um modelo pequeno ajustado ao contrato deveria competir com um modelo muito maior que nunca foi ensinado a respeitar schema. A hipótese era que **aderência ao contrato pesa mais que capacidade bruta** em tarefas de saída fechada.
 
-O repositório existe para testar essa hipótese de forma reprodutível: mesmo prompt, mesma suite, mesmos baselines, métrica objetiva. Sem número medido, a hipótese continua hipótese — e é assim que está declarado aqui.
+A medição sustenta a hipótese. O 0,5B com LoRA chega a 0,807 de aderência ao spec contra 0,687 do 7B, e ganha também em decisão exata: 0,587 contra 0,227. O repositório existe para que essa comparação seja reprodutível por qualquer pessoa: mesmo prompt, mesma suite, mesmos baselines, métrica objetiva, comando publicado.
 
 ## O problema
 
@@ -109,12 +109,18 @@ curl -s localhost:8000/route -H 'content-type: application/json' \
 ```json
 {
   "utterance": "cancela a reserva BK1042",
-  "decision": {"tool": "cancel_booking", "args": {"booking_id": "BK1042"}, "confidence": 0.94},
+  "backend": "hf:Qwen/Qwen2.5-0.5B-Instruct+checkpoints/lora/final",
+  "latency_ms": 4300.6,
+  "decision": {"tool": "cancel_booking", "args": {"booking_id": "BK1042"}, "confidence": 0.89},
   "ok": true,
-  "violations": [],
-  "latency_ms": 36.2
+  "violations": []
 }
 ```
+
+Saída real do adapter de referência em CPU, com o campo `raw` omitido por espaço. A latência é a
+medida nesta máquina, não um alvo de projeto.
+
+Em container: `make fetch-adapter && docker compose up --build`. O compose monta `./checkpoints` como volume e o servidor sobe com o adapter; sem o volume, ele sobe no modelo base e o `/health` informa qual backend está ativo.
 
 ## Métricas
 

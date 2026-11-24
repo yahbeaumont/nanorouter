@@ -2,7 +2,13 @@ services:
   api:
     build: .
     ports: ["8000:8000"]
+    environment:
+      NANOROUTER_ADAPTER: /app/checkpoints/lora/final
+    volumes:
+      # make fetch-adapter deixa o adapter em ./checkpoints/lora/final
+      - ./checkpoints:/app/checkpoints:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 10s
-      retries: 5
+      interval: 15s
+      retries: 10
+      start_period: 90s
